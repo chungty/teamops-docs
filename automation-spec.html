@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Automation Spec Sprint — Turn one broken workflow into a builder-ready spec</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink:       #111827;
+      --muted:     #6B7280;
+      --border:    #E5E7EB;
+      --bg:        #FFFFFF;
+      --surface:   #F9FAFB;
+      --accent:    #2563EB;
+      --accent-lt: #EFF6FF;
+      --green:     #16A34A;
+      --green-lt:  #F0FDF4;
+      --red:       #DC2626;
+      --red-lt:    #FEF2F2;
+      --radius:    10px;
+      --max:       680px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.65;
+      color: var(--ink);
+      background: var(--bg);
+      padding: 40px 20px 80px;
+    }
+
+    .wrap { max-width: var(--max); margin: 0 auto; }
+
+    /* ── Hero ── */
+    .hero {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 40px;
+      margin-bottom: 40px;
+    }
+    .eyebrow {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: var(--accent-lt);
+      padding: 3px 10px;
+      border-radius: 100px;
+      margin-bottom: 18px;
+    }
+    h1 {
+      font-size: clamp(26px, 5vw, 36px);
+      font-weight: 800;
+      line-height: 1.2;
+      letter-spacing: -.02em;
+      margin-bottom: 16px;
+    }
+    .hero-sub {
+      font-size: 18px;
+      color: var(--muted);
+      max-width: 580px;
+      margin-bottom: 28px;
+    }
+    .hero-sub strong { color: var(--ink); }
+
+    /* ── CTA ── */
+    .cta-block {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      display: inline-block;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 600;
+      font-size: 15px;
+      padding: 12px 24px;
+      border-radius: var(--radius);
+      text-decoration: none;
+      transition: background .15s;
+    }
+    .btn:hover { background: #1d4ed8; }
+    .btn-ghost {
+      background: transparent;
+      color: var(--accent);
+      border: 1.5px solid var(--accent);
+    }
+    .btn-ghost:hover { background: var(--accent-lt); }
+    .cta-note { font-size: 13px; color: var(--muted); }
+
+    /* ── Section titles ── */
+    h2 {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -.01em;
+      margin-bottom: 14px;
+    }
+    h3 {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    section { margin-bottom: 40px; }
+
+    /* ── Deliverables list ── */
+    .deliverables {
+      display: grid;
+      gap: 12px;
+    }
+    .deliverable {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+    }
+    .deliverable .num {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .deliverable .text { font-size: 15px; }
+
+    /* ── Fit columns ── */
+    .fit-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 520px) { .fit-grid { grid-template-columns: 1fr; } }
+    .fit-card {
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      padding: 16px;
+    }
+    .fit-card.good { background: var(--green-lt); border-color: #bbf7d0; }
+    .fit-card.bad  { background: var(--red-lt);   border-color: #fecaca; }
+    .fit-card h3 { display: flex; align-items: center; gap: 7px; }
+    .fit-card ul { padding-left: 18px; font-size: 14px; line-height: 1.7; color: #374151; }
+
+    /* ── Sprint timeline ── */
+    .days { display: grid; gap: 10px; }
+    .day {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg);
+    }
+    .day-label {
+      flex-shrink: 0;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--accent);
+      padding-top: 2px;
+      min-width: 46px;
+    }
+    .day-text { font-size: 15px; }
+    .day-text strong { display: block; margin-bottom: 2px; }
+
+    /* ── Spec slice ── */
+    .spec-slice {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 22px;
+      font-size: 14px;
+    }
+    .spec-slice .label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+    .spec-row {
+      margin-bottom: 14px;
+    }
+    .spec-row:last-child { margin-bottom: 0; }
+    .spec-row h4 {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+    .spec-row ul { padding-left: 16px; line-height: 1.8; }
+    .spec-row p  { line-height: 1.7; }
+
+    /* ── Avoids ── */
+    .avoids { display: grid; gap: 8px; }
+    .avoid-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 15px;
+      padding: 10px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+    .avoid-item::before {
+      content: "×";
+      font-weight: 800;
+      color: var(--red);
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    /* ── Examples ── */
+    .examples { display: grid; gap: 8px; }
+    .example-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 15px;
+      padding: 10px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+    .example-item::before {
+      content: "→";
+      font-weight: 700;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    /* ── Truth note ── */
+    .truth-note {
+      border-top: 1px solid var(--border);
+      padding-top: 24px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    /* ── Footer CTA ── */
+    .footer-cta {
+      background: var(--accent-lt);
+      border: 1px solid #bfdbfe;
+      border-radius: var(--radius);
+      padding: 28px 24px;
+      text-align: center;
+    }
+    .footer-cta h2 { margin-bottom: 10px; }
+    .footer-cta p { color: var(--muted); margin-bottom: 20px; font-size: 15px; }
+
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 40px 0;
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ── Hero ─────────────────────────────────────── -->
+  <div class="hero">
+    <span class="eyebrow">Automation Spec Sprint</span>
+    <h1>Before you hire another ops generalist,<br>spec the workflow.</h1>
+    <p class="hero-sub">
+      A <strong>5-day fixed-scope sprint</strong> for founder-led SaaS teams.
+      Map one recurring workflow, write the rules and edge cases, and leave with
+      a <strong>plain-English spec someone can actually build from</strong> —
+      including the immediate next implementation step.
+    </p>
+    <div class="cta-block">
+      <a class="btn" href="mailto:thomas@haven.so?subject=Automation%20Spec%20Sprint%20interest">Book a scoping call</a>
+      <span class="cta-note">No commitment. 30 minutes. Bring one workflow.</span>
+    </div>
+  </div>
+
+  <!-- ── What ships ─────────────────────────────────── -->
+  <section>
+    <h2>What ships at the end of the sprint</h2>
+    <div class="deliverables">
+      <div class="deliverable"><div class="num">1</div><div class="text">Current-state workflow map — what actually happens today, not what the team wishes happened</div></div>
+      <div class="deliverable"><div class="num">2</div><div class="text">Failure-point and edge-case list — every exception documented before a builder has to rediscover them</div></div>
+      <div class="deliverable"><div class="num">3</div><div class="text">Builder-ready automation spec — trigger, steps, decision rules, approvals, owner handoffs</div></div>
+      <div class="deliverable"><div class="num">4</div><div class="text">Implementation recommendation — using your current stack where possible, not a new tool for its own sake</div></div>
+      <div class="deliverable"><div class="num">5</div><div class="text">Immediate next-step handoff — what to build now, what to test first, what stays manual</div></div>
+    </div>
+  </section>
+
+  <!-- ── Good fit / not a fit ───────────────────────── -->
+  <section>
+    <h2>Is this a fit?</h2>
+    <div class="fit-grid">
+      <div class="fit-card good">
+        <h3>✓ Good fit</h3>
+        <ul>
+          <li>Founder-led or small operator-led SaaS</li>
+          <li>One workflow keeps eating attention every week</li>
+          <li>Pain is concrete: routing, handoffs, follow-up, approvals, reporting, support, onboarding, or billing exceptions</li>
+          <li>You want leverage faster than a full ops hire</li>
+          <li>A decision-maker can stay available during the sprint</li>
+        </ul>
+      </div>
+      <div class="fit-card bad">
+        <h3>✕ Not a fit</h3>
+        <ul>
+          <li>Need a full internal tool before the workflow is even understood</li>
+          <li>The real problem is strategy, not repetitive execution</li>
+          <li>The process changes daily — nothing is stable enough to spec yet</li>
+          <li>No owner available to confirm rules and exceptions</li>
+          <li>You want invented AI magic instead of a real operating document</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Example workflows ─────────────────────────── -->
+  <section>
+    <h2>Workflows this sprint is built for</h2>
+    <div class="examples">
+      <div class="example-item">Inbound lead routing from forms, email, or Slack into CRM and follow-up</div>
+      <div class="example-item">Customer onboarding handoffs after a deal closes</div>
+      <div class="example-item">Support triage and escalation rules</div>
+      <div class="example-item">Invoice, billing, or refund exception handling</div>
+      <div class="example-item">Weekly founder reporting that still depends on spreadsheet cleanup</div>
+      <div class="example-item">Approval queues that stall because no one has actually defined the rules</div>
+    </div>
+  </section>
+
+  <!-- ── Sample spec slice ─────────────────────────── -->
+  <section>
+    <h2>What "builder-ready" looks like in practice</h2>
+    <p style="font-size:14px;color:var(--muted);margin-bottom:16px;">
+      Illustrative example — not a client case study. This is a truthful excerpt showing the level of specificity the sprint produces.
+    </p>
+    <div class="spec-slice">
+      <div class="label">Sample spec slice · Demo-request routing</div>
+
+      <div class="spec-row">
+        <h4>Trigger + inputs captured</h4>
+        <ul>
+          <li>New demo request from website form, founder-forwarded email, or Slack intake</li>
+          <li>Captured: contact, company, role, stated pain, source, timestamp, owner availability</li>
+          <li>Goal: route fast without losing context or creating duplicate follow-up</li>
+        </ul>
+      </div>
+
+      <div class="spec-row">
+        <h4>Decision rules</h4>
+        <ul>
+          <li>If an open opportunity exists → append context and notify the current owner; do not create a second route</li>
+          <li>If pain is concrete and workflow-shaped → route to automation-spec qualification</li>
+          <li>If the request is vague → send one clarifying question before booking time</li>
+          <li>If the inbound is from an existing customer → route to support/success, not sales</li>
+        </ul>
+      </div>
+
+      <div class="spec-row">
+        <h4>Exceptions + human-in-loop</h4>
+        <ul>
+          <li>Duplicate submissions inside a 7-day window</li>
+          <li>Missing company or domain → flag for manual review</li>
+          <li>Unclear ownership → escalate rather than silently drop the lead</li>
+          <li>Founder approves final sprint scope before quoting or kickoff</li>
+        </ul>
+      </div>
+
+      <div class="spec-row">
+        <h4>Output state</h4>
+        <ul>
+          <li>One clear owner with SLA</li>
+          <li>Logged route reason and current state</li>
+          <li>Draft next action for the assigned owner</li>
+          <li>Audit trail that makes later automation implementation straightforward</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Sprint shape ─────────────────────────────── -->
+  <section>
+    <h2>How the five days work</h2>
+    <div class="days">
+      <div class="day"><div class="day-label">Day 1</div><div class="day-text"><strong>Choose the workflow</strong>Pick the one live, painful, and worth-fixing-now process. Agree on scope before building anything.</div></div>
+      <div class="day"><div class="day-label">Day 2</div><div class="day-text"><strong>Map the current state</strong>Write down what actually happens today — not the ideal, not the wiki, but the real sequence.</div></div>
+      <div class="day"><div class="day-label">Day 3</div><div class="day-text"><strong>Write the spec</strong>Define the trigger, actions, rules, exceptions, approvals, and owner handoffs in plain English.</div></div>
+      <div class="day"><div class="day-label">Day 4</div><div class="day-text"><strong>Pressure-test the edges</strong>Review failure modes, rollback paths, and where humans still need to stay in the loop.</div></div>
+      <div class="day"><div class="day-label">Day 5</div><div class="day-text"><strong>Handoff</strong>Ship the final spec plus the immediate implementation recommendation — what to build now, what to test first, what stays manual.</div></div>
+    </div>
+  </section>
+
+  <!-- ── What this avoids ─────────────────────────── -->
+  <section>
+    <h2>What this replaces</h2>
+    <div class="avoids">
+      <div class="avoid-item">Another half-described workflow trapped in Slack</div>
+      <div class="avoid-item">A vague AI brainstorm with no operating rules</div>
+      <div class="avoid-item">Hiring pressure before the workflow is even clear</div>
+      <div class="avoid-item">Building first and discovering edge cases later</div>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ── Footer CTA ─────────────────────────────────── -->
+  <div class="footer-cta">
+    <h2>Ready to spec one workflow?</h2>
+    <p>Bring one workflow that is already painful now — the tools you use, who owns it, and the known exceptions. You leave with a spec someone can build from and a clear first implementation step.</p>
+    <a class="btn" href="mailto:thomas@haven.so?subject=Automation%20Spec%20Sprint%20interest">Book a 30-minute scoping call</a>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- ── Truth note ─────────────────────────────────── -->
+  <div class="truth-note">
+    <strong>Truth note:</strong> This page avoids fake logos, invented case studies, and hand-wavy "AI will just figure it out" language.
+    The workflow slice above is illustrative — it shows the level of specificity the sprint produces, not a past client result.
+    The goal is to make the deliverable shape legible enough that you can decide whether the pain is real and urgent enough to fix now.
+  </div>
+
+</div>
+</body>
+</html>
